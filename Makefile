@@ -1,2 +1,2 @@
 run-dev:
-	go run cmd/api/main.go
+	cd ./cmd/api && go run .
