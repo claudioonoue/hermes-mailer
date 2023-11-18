@@ -18,4 +18,9 @@ var routes = []route{
 		Path:    "/",
 		Handler: checkAPI,
 	},
+	{
+		Method:  http.MethodPost,
+		Path:    "/mail",
+		Handler: sendMail,
+	},
 }
