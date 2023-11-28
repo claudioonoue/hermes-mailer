@@ -16,10 +16,7 @@ func NewConsumer(connectionString string) *Consumer {
 	}
 }
 
-func (mc *Consumer) ConsumeFromMailerExchange(
-	queue string,
-	callback func(msg interface{}),
-) error {
+func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan string, error) {
 	msgs, err := mc.client.consume(rabbitMQConsume{
 		Queue:     queue,
 		Consumer:  "",
@@ -31,19 +28,24 @@ func (mc *Consumer) ConsumeFromMailerExchange(
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	ch := make(chan string)
 
 	go func() {
 		for msg := range msgs {
-			callback(string(msg.Body))
+			ch <- string(msg.Body)
 		}
+
+		close(ch)
 	}()
 
-	return nil
+	return ch, nil
 }
 
 func (mc *Consumer) CloseConn() error {
+	mc.client.closeConn()
 	return nil
 }
 
