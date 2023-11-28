@@ -20,11 +20,15 @@ var App *app
 
 func main() {
 	App = &app{
-		Fiber:    fiber.New(),
-		UseCases: usecases.New(),
+		Fiber: fiber.New(),
+		UseCases: usecases.New(&usecases.Setup{
+			MessagePublisherConfig: &usecases.MessageBrokerConfig{
+				URL: "amqp://guest:guest@localhost:5672/",
+			},
+		}),
 	}
 
-	for _, route := range routes {
+	for _, route := range App.GetRoutes() {
 		App.Fiber.Add(route.Method, route.Path, route.Handler)
 	}
 
@@ -38,11 +42,11 @@ func (a *app) listenForShutdown() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	fmt.Println("Shutting down API...")
-	a.Shutdown()
+	a.shutdown()
 	os.Exit(0)
 }
 
-func (a *app) Shutdown() {
+func (a *app) shutdown() {
 	fmt.Println("Cleanup tasks...")
 
 	a.UseCases.Cleanup()

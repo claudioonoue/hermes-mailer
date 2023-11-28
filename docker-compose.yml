@@ -30,10 +30,9 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
-    restart: always
 
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:management
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest

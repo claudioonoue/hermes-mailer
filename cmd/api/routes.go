@@ -12,15 +12,17 @@ type route struct {
 	Handler func(c *fiber.Ctx) error
 }
 
-var routes = []route{
-	{
-		Method:  http.MethodGet,
-		Path:    "/",
-		Handler: checkAPI,
-	},
-	{
-		Method:  http.MethodPost,
-		Path:    "/mail",
-		Handler: sendMail,
-	},
+func (a *app) GetRoutes() []route {
+	return []route{
+		{
+			Method:  http.MethodGet,
+			Path:    "/",
+			Handler: checkAPI,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/mail",
+			Handler: sendMail,
+		},
+	}
 }
