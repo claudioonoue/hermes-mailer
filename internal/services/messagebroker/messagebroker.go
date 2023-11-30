@@ -17,7 +17,6 @@ type MailerQueueMessage struct {
 
 type MailerQueueMessageBody struct {
 	ExternalID string `json:"externalID"`
-	EmailType  string `json:"emailType"`
 }
 
 func (m MailerQueueMessageBody) toJSON() ([]byte, error) {

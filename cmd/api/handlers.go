@@ -20,6 +20,7 @@ type mail struct {
 	To      string `json:"to"`
 	Subject string `json:"subject"`
 	Body    string `json:"body"`
+	Type    string `json:"type"`
 }
 
 func sendMail(c *fiber.Ctx) error {
@@ -37,6 +38,7 @@ func sendMail(c *fiber.Ctx) error {
 		To:      mail.To,
 		Subject: mail.Subject,
 		Body:    mail.Body,
+		Type:    mail.Type,
 	})
 
 	if err != nil {
