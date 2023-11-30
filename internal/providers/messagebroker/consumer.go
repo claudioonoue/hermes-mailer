@@ -1,9 +1,11 @@
 package messagebroker
 
+// Consumer is a wrapper around the message broker client.
 type Consumer struct {
 	client *rabbitMQ
 }
 
+// NewConsumer is a function that will return a new Consumer instance.
 func NewConsumer(connectionString string) *Consumer {
 	client := newRabbitMQ(connectionString)
 	client.dial()
@@ -16,6 +18,7 @@ func NewConsumer(connectionString string) *Consumer {
 	}
 }
 
+// ConsumeFromMailerExchange is a method that will consume a message from the mailer exchange.
 func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan MailerQueueMessage, error) {
 	msgs, err := mc.client.consume(rabbitMQConsume{
 		Queue:     queue,
@@ -36,7 +39,7 @@ func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan MailerQueueM
 	go func() {
 		for msg := range msgs {
 			var body MailerQueueMessageBody
-			err := body.fromJSON(msg.Body)
+			err := body.fromJSONBytes(msg.Body)
 			if err != nil {
 				continue
 			}
@@ -53,11 +56,13 @@ func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan MailerQueueM
 	return ch, nil
 }
 
+// CloseConn is a method that will close the connection to the message broker.
 func (mc *Consumer) CloseConn() error {
 	mc.client.closeConn()
 	return nil
 }
 
+// setupMailerConsumer is a helper function that will setup the mailer consumer.
 func setupMailerConsumer(client *rabbitMQ) {
 	client.exchangeDeclare(rabbitMQExchange{
 		Name:       MailerExchange,

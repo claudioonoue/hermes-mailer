@@ -33,7 +33,7 @@ func sendMail(c *fiber.Ctx) error {
 		})
 	}
 
-	err := App.UseCases.SendMail(usecases.Mail{
+	err := App.UseCases.EnqueueMail(usecases.Mail{
 		From:    mail.From,
 		To:      mail.To,
 		Subject: mail.Subject,

@@ -7,6 +7,12 @@ import (
 	"hermes-mailer/internal/providers/messagebroker"
 )
 
+const (
+	// MailSimple is a constant that represents a simple mail type.
+	MailSimple = "simple"
+)
+
+// Mail is a struct that represents a mail information.
 type Mail struct {
 	From    string
 	To      string
@@ -15,22 +21,22 @@ type Mail struct {
 	Type    string
 }
 
-func (c *Core) SendMail(m Mail) error {
+// EnqueueMail is a use case that will enqueue a mail to be sent.
+func (c *Core) EnqueueMail(m Mail) error {
 	var err error
 
-	mailType, err := getMailType(m.Type)
+	exchangeKey, err := getExchangeKeyBasedOnMailType(m.Type)
 	if err != nil {
 		return err
 	}
 
 	err = c.MessagePublisher.PublishToMailerExchange(
-		mailType,
+		exchangeKey,
 		messagebroker.MailerQueueMessageBody{
 			ExternalID: "123",
 		},
 		10*time.Second,
 	)
-
 	if err != nil {
 		return err
 	}
@@ -38,9 +44,10 @@ func (c *Core) SendMail(m Mail) error {
 	return nil
 }
 
-func getMailType(t string) (string, error) {
+// getExchangeKeyBasedOnMailType is a helper function that will return the exchange key based on the mail type.
+func getExchangeKeyBasedOnMailType(t string) (string, error) {
 	switch t {
-	case messagebroker.MailerSendSimpleMail:
+	case MailSimple:
 		return messagebroker.MailerSendSimpleMail, nil
 	default:
 		return "", errors.New("invalid email type")
