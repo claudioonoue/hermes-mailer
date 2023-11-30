@@ -16,7 +16,7 @@ func NewConsumer(connectionString string) *Consumer {
 	}
 }
 
-func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan string, error) {
+func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan MailerQueueMessage, error) {
 	msgs, err := mc.client.consume(rabbitMQConsume{
 		Queue:     queue,
 		Consumer:  "",
@@ -31,11 +31,20 @@ func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan string, erro
 		return nil, err
 	}
 
-	ch := make(chan string)
+	ch := make(chan MailerQueueMessage)
 
 	go func() {
 		for msg := range msgs {
-			ch <- string(msg.Body)
+			var body MailerQueueMessageBody
+			err := body.fromJSON(msg.Body)
+			if err != nil {
+				continue
+			}
+
+			ch <- MailerQueueMessage{
+				Key:  msg.RoutingKey,
+				Body: body,
+			}
 		}
 
 		close(ch)
@@ -71,7 +80,7 @@ func setupMailerConsumer(client *rabbitMQ) {
 
 	client.queueBind(rabbitMQQueueBind{
 		Queue:    MailerQueue,
-		Key:      MailerSendSimpleMailKey,
+		Key:      MailerSendSimpleMail,
 		Exchange: MailerExchange,
 		NoWait:   false,
 	})

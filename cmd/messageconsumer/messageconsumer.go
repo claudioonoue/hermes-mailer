@@ -48,7 +48,7 @@ func (a *app) listenForShutdown() {
 	os.Exit(0)
 }
 
-func exampleConsumerFunc(msg string) {
+func exampleConsumerFunc(msg messagebroker.MailerQueueMessage) {
 	fmt.Println("----------------------------")
 	fmt.Println(time.Now().Format("2006-01-02 15:04:05"))
 	fmt.Println("Message received!")

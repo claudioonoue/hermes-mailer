@@ -31,11 +31,18 @@ func NewPublisher(connectionString string) *Publisher {
 	}
 }
 
-func (mp *Publisher) PublishToMailerExchange(key, message string, timeout time.Duration) error {
+func (mp *Publisher) PublishToMailerExchange(key string, message MailerQueueMessageBody, timeout time.Duration) error {
+	var err error
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	err := mp.client.publishWithContext(rabbitMQPublish{
+	jsonMessage, err := message.toJSON()
+	if err != nil {
+		return err
+	}
+
+	err = mp.client.publishWithContext(rabbitMQPublish{
 		Ctx:       ctx,
 		Exchange:  MailerExchange,
 		Key:       key,
@@ -43,10 +50,9 @@ func (mp *Publisher) PublishToMailerExchange(key, message string, timeout time.D
 		Immediate: false,
 		Msg: amqp091.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(message),
+			Body:        jsonMessage,
 		},
 	})
-
 	if err != nil {
 		return err
 	}

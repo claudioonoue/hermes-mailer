@@ -1,7 +1,6 @@
 package usecases
 
 import (
-	"fmt"
 	"time"
 
 	"hermes-mailer/internal/services/messagebroker"
@@ -16,8 +15,11 @@ type Mail struct {
 
 func (c *Core) SendMail(m Mail) error {
 	err := c.MessagePublisher.PublishToMailerExchange(
-		messagebroker.MailerSendSimpleMailKey,
-		fmt.Sprintf("%s\n%s\n%s\n%s", m.From, m.To, m.Subject, m.Body),
+		messagebroker.MailerSendSimpleMail,
+		messagebroker.MailerQueueMessageBody{
+			ExternalID: "123",
+			EmailType:  "simple",
+		},
 		10*time.Second,
 	)
 
