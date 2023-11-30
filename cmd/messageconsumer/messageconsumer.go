@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"hermes-mailer/internal/services/messagebroker"
+	"hermes-mailer/internal/providers/messagebroker"
 )
 
 type app struct {

@@ -3,7 +3,7 @@ package usecases
 import (
 	"fmt"
 
-	"hermes-mailer/internal/services/messagebroker"
+	"hermes-mailer/internal/providers/messagebroker"
 )
 
 // Core is the core struct of the usecases layer.

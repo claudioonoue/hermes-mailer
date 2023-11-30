@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"hermes-mailer/internal/services/messagebroker"
+	"hermes-mailer/internal/providers/messagebroker"
 )
 
 type Mail struct {
