@@ -21,7 +21,7 @@ func (a *app) GetRoutes() []route {
 		},
 		{
 			Method:  http.MethodPost,
-			Path:    "/simple-mail",
+			Path:    "/mail",
 			Handler: sendMail,
 		},
 	}

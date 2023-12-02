@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +11,7 @@ import (
 )
 
 type app struct {
+	Logger   *logger
 	Fiber    *fiber.App
 	UseCases *usecases.Core
 }
@@ -19,35 +19,52 @@ type app struct {
 var App *app
 
 func main() {
-	App = &app{
-		Fiber: fiber.New(),
-		UseCases: usecases.New(&usecases.Setup{
-			MessagePublisherConfig: &usecases.MessageBrokerConfig{
-				URL: "amqp://guest:guest@localhost:5672/",
-			},
-		}),
+	var err error
+
+	logger, err := newLogger()
+	if err != nil {
+		panic(err)
+	}
+	logger.info("Configuring API...")
+	logger.info("Initializing UseCases...")
+	useCasesCore, err := usecases.New(&usecases.Setup{
+		MessagePublisherConfig: &usecases.MessageBrokerConfig{
+			URL: "amqp://guest:guest@localhost:5672/",
+		},
+	})
+	if err != nil {
+		logger.error(err.Error())
+		return
 	}
 
+	App = &app{
+		Logger: logger,
+		Fiber: fiber.New(fiber.Config{
+			DisableStartupMessage: true,
+		}),
+		UseCases: useCasesCore,
+	}
+
+	logger.info("Binding routes...")
 	for _, route := range App.GetRoutes() {
 		App.Fiber.Add(route.Method, route.Path, route.Handler)
 	}
 
 	go App.listenForShutdown()
 
+	logger.info("Serving API...")
 	App.Fiber.Listen(":3000")
 }
 
 func (a *app) listenForShutdown() {
+	a.Logger.info("Listening for shutdown...")
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	fmt.Println("Shutting down API...")
 	a.shutdown()
 	os.Exit(0)
 }
 
 func (a *app) shutdown() {
-	fmt.Println("Cleanup tasks...")
-
 	a.UseCases.Cleanup()
 }

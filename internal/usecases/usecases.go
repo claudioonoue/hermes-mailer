@@ -1,8 +1,6 @@
 package usecases
 
 import (
-	"fmt"
-
 	"hermes-mailer/internal/providers/messagebroker"
 )
 
@@ -30,18 +28,14 @@ type MessageBrokerConfig struct {
 // Example: if you pass a nil value to the MessagePublisherConfig field, the MessagePublisher dependency will not be initialized.
 //
 // It returns a pointer to the new instantiated Core.
-func New(c *Setup) *Core {
-	fmt.Println("Initializing UseCases dependencies...")
-
+func New(c *Setup) (*Core, error) {
 	return &Core{
 		MessagePublisher: initMessagePublisher(c.MessagePublisherConfig),
-	}
+	}, nil
 }
 
 // Cleanup cleans up all the usecases dependencies.
 func (c *Core) Cleanup() {
-	fmt.Println("Cleaning UseCases dependencies...")
-
 	c.MessagePublisher.CloseConn()
 }
 
@@ -50,10 +44,5 @@ func initMessagePublisher(mbc *MessageBrokerConfig) *messagebroker.Publisher {
 	if mbc == nil {
 		return nil
 	}
-
-	fmt.Println("Initializing MessagePublisher...")
-
-	messagePublisher := messagebroker.NewPublisher(mbc.URL)
-
-	return messagePublisher
+	return messagebroker.NewPublisher(mbc.URL)
 }
