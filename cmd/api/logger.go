@@ -41,12 +41,16 @@ func newLogger() (*logger, error) {
 		return lvl < zapcore.ErrorLevel
 	})
 
-	logFile, err := os.OpenFile("info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if _, err := os.Stat("./temp"); os.IsNotExist(err) {
+		os.Mkdir("./temp", 0755)
+	}
+
+	logFile, err := os.OpenFile("./temp/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 
-	errorFile, err := os.OpenFile("error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	errorFile, err := os.OpenFile("./temp/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -54,11 +58,11 @@ func newLogger() (*logger, error) {
 	fileInfos := zapcore.Lock(logFile)
 	fileErrors := zapcore.Lock(errorFile)
 
-	consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+	jsonEncoder := zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig())
 
 	core := zapcore.NewTee(
-		zapcore.NewCore(consoleEncoder, fileInfos, lowPriority),
-		zapcore.NewCore(consoleEncoder, fileErrors, highPriority),
+		zapcore.NewCore(jsonEncoder, fileInfos, lowPriority),
+		zapcore.NewCore(jsonEncoder, fileErrors, highPriority),
 	)
 
 	return &logger{
