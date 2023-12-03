@@ -1,3 +1,5 @@
+# --------------------------------------------------------------------------------------
+# ---------------------------------- VARIABLES -----------------------------------------
 POSTGRES_USER = postgres
 POSTGRES_PASSWORD = postgres
 
@@ -5,10 +7,12 @@ RABBITMQ_DEFAULT_USER = rabbitmq
 RABBITMQ_DEFAULT_PASS = rabbitmq
 
 API_FOLDER = ./cmd/api
-API_BINARY_NAME = api
+API_BINARY_NAME = api_build
 CONSUMER_FOLDER = ./cmd/messageconsumer
-CONSUMER_BINARY_NAME = messageconsumer
+CONSUMER_BINARY_NAME = messageconsumer_build
 
+# --------------------------------------------------------------------------------------
+# ------------------------------------- API --------------------------------------------
 build-api:
 	@echo "Building API..."
 	@env CGO_ENABLED=0  go build -ldflags="-s -w" -o $(API_BINARY_NAME) $(API_FOLDER)
@@ -24,6 +28,8 @@ stop-api:
 	@-pkill -SIGTERM -f "./${API_BINARY_NAME}"
 	@echo "API stopped!"
 
+# --------------------------------------------------------------------------------------
+# ------------------------------------- Consumer ---------------------------------------
 build-consumer:
 	@echo "Building Consumer..."
 	@env CGO_ENABLED=0  go build -ldflags="-s -w" -o $(CONSUMER_BINARY_NAME) $(CONSUMER_FOLDER)
@@ -39,6 +45,8 @@ stop-consumer:
 	@-pkill -SIGTERM -f "./${CONSUMER_BINARY_NAME}"
 	@echo "Consumer stopped!"
 
+# --------------------------------------------------------------------------------------
+# ------------------------------------- Docker -----------------------------------------
 start-docker:
 	@echo "Starting docker..."
 	@POSTGRES_USER=${POSTGRES_USER} POSTGRES_PASSWORD=${POSTGRES_PASSWORD} RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER} RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS} docker compose up -d
@@ -49,6 +57,8 @@ stop-docker:
 	@docker compose down
 	@echo "Docker stopped!"
 
+# --------------------------------------------------------------------------------------
+# ---------------------------------- Management ----------------------------------------
 clean: stop-api stop-consumer
 	@echo "Cleaning..."
 	@go clean

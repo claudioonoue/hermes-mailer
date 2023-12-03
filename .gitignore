@@ -6,5 +6,5 @@ tmp/*
 .env
 
 # Ignore build files
-./api
-./messageconsumer
+api_build
+messageconsumer_build
