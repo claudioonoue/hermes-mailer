@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,42 +11,39 @@ import (
 	"hermes-mailer/internal/providers/messagebroker"
 )
 
-type app struct {
+type App struct {
+	Config          *Config
 	MessageConsumer *messagebroker.Consumer
 }
 
 func main() {
 	var err error
 
-	consumer, err := messagebroker.NewConsumer("amqp://guest:guest@localhost:5672/")
+	config := newConfig()
+
+	consumer, err := messagebroker.NewConsumer(config.MessageBrokerURL)
 	if err != nil {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
 
-	App := &app{
+	app := &App{
+		Config:          config,
 		MessageConsumer: consumer,
 	}
 
-	go App.listenForShutdown()
+	go app.ListenForShutdown()
 
-	ch, err := App.MessageConsumer.ConsumeFromMailerExchange(messagebroker.MailerQueue)
+	ch, err := app.MessageConsumer.ConsumeFromMailerExchange(messagebroker.MailerQueue)
 	if err != nil {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
 
-	for {
-		select {
-		case msg := <-ch:
-			exampleConsumerFunc(msg)
-
-		default:
-			time.Sleep(2 * time.Second)
-			fmt.Println("Waiting for messages...")
-		}
+	for msg := range ch {
+		exampleConsumerFunc(msg)
 	}
 }
 
-func (a *app) listenForShutdown() {
+func (a *App) ListenForShutdown() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	<-ch

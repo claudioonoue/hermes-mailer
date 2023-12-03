@@ -22,12 +22,9 @@ type App struct {
 func main() {
 	var err error
 
-	config, err := newConfig()
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
+	config := newConfig()
 
-	isProd := config.Env == "prod"
+	isProd := config.Env == EnvProd
 
 	logger, err := newLogger(isProd)
 	if err != nil {
@@ -56,20 +53,20 @@ func main() {
 		app.Fiber.Add(route.Method, route.Path, route.Handler)
 	}
 
-	go app.listenForShutdown()
+	go app.ListenForShutdown()
 
 	app.Fiber.Listen(fmt.Sprintf(":%s", config.APIPort))
 }
 
-func (a *App) listenForShutdown() {
+func (a *App) ListenForShutdown() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	a.shutdown()
+	a.Shutdown()
 	os.Exit(0)
 }
 
-func (a *App) shutdown() {
+func (a *App) Shutdown() {
 	a.UseCases.Cleanup()
 	a.Logger.Sync()
 }

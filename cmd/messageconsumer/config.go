@@ -8,7 +8,6 @@ import (
 
 type Config struct {
 	Env              string
-	APIPort          string
 	MessageBrokerURL string
 }
 
@@ -23,7 +22,6 @@ func newConfig() *Config {
 
 	return &Config{
 		Env:              os.Getenv("ENV"),
-		APIPort:          os.Getenv("API_PORT"),
 		MessageBrokerURL: os.Getenv("MESSAGE_BROKER_URL"),
 	}
 }
