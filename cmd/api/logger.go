@@ -7,33 +7,33 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// logger is a wrapper around a client logger.
-type logger struct {
-	client *zap.Logger
+// Logger is a wrapper around a client logger.
+type Logger struct {
+	Client *zap.Logger
 }
 
-// info logs a message with info level.
-func (l *logger) info(msg string) {
-	l.client.Info(msg)
+// Info logs a message with info level.
+func (l *Logger) Info(msg string) {
+	l.Client.Info(msg)
 }
 
-// warn logs a message with warn level.
-func (l *logger) warn(msg string) {
-	l.client.Warn(msg)
+// Warn logs a message with warn level.
+func (l *Logger) Warn(msg string) {
+	l.Client.Warn(msg)
 }
 
-// error logs a message with error level.
-func (l *logger) error(msg string) {
-	l.client.Error(msg)
+// Error logs a message with error level.
+func (l *Logger) Error(msg string) {
+	l.Client.Error(msg)
 }
 
-// sync flushes any buffered log entries.
-func (l *logger) sync() error {
-	return l.client.Sync()
+// Sync flushes any buffered log entries.
+func (l *Logger) Sync() error {
+	return l.Client.Sync()
 }
 
-// newLogger creates a new logger.
-func newLogger() (*logger, error) {
+// newProdLogger creates a new logger for production.
+func newProdLogger() (*Logger, error) {
 	highPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= zapcore.ErrorLevel
 	})
@@ -41,31 +41,51 @@ func newLogger() (*logger, error) {
 		return lvl < zapcore.ErrorLevel
 	})
 
-	if _, err := os.Stat("./temp/api"); os.IsNotExist(err) {
-		os.MkdirAll("./temp/api", 0755)
+	if _, err := os.Stat("./tmp/api"); os.IsNotExist(err) {
+		os.MkdirAll("./tmp/api", 0755)
 	}
 
-	logFile, err := os.OpenFile("./temp/api/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	infoFile, err := os.OpenFile("./tmp/api/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 
-	errorFile, err := os.OpenFile("./temp/api/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	errorFile, err := os.OpenFile("./tmp/api/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 
-	fileInfos := zapcore.Lock(logFile)
-	fileErrors := zapcore.Lock(errorFile)
+	infoWriter := zapcore.Lock(infoFile)
+	errorWriter := zapcore.Lock(errorFile)
 
 	jsonEncoder := zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig())
 
 	core := zapcore.NewTee(
-		zapcore.NewCore(jsonEncoder, fileInfos, lowPriority),
-		zapcore.NewCore(jsonEncoder, fileErrors, highPriority),
+		zapcore.NewCore(jsonEncoder, infoWriter, lowPriority),
+		zapcore.NewCore(jsonEncoder, errorWriter, highPriority),
 	)
 
-	return &logger{
-		client: zap.New(core),
+	return &Logger{
+		Client: zap.New(core),
 	}, nil
+}
+
+func newDevLogger() (*Logger, error) {
+	zapLogger, err := zap.NewDevelopment()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Logger{
+		Client: zapLogger,
+	}, nil
+}
+
+// newLogger creates a new logger.
+func newLogger(isProd bool) (*Logger, error) {
+	if isProd {
+		return newProdLogger()
+	}
+
+	return newDevLogger()
 }

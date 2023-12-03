@@ -8,7 +8,7 @@ import (
 	"hermes-mailer/internal/usecases"
 )
 
-func checkAPI(c *fiber.Ctx) error {
+func (a *App) CheckAPI(c *fiber.Ctx) error {
 	return c.JSON(JSONResponse{
 		Data:    nil,
 		Message: "API is up and running",
@@ -23,7 +23,7 @@ type mail struct {
 	Type    string `json:"type"`
 }
 
-func sendMail(c *fiber.Ctx) error {
+func (a *App) SendMail(c *fiber.Ctx) error {
 	var mail mail
 
 	if err := c.BodyParser(&mail); err != nil {
@@ -33,7 +33,7 @@ func sendMail(c *fiber.Ctx) error {
 		})
 	}
 
-	err := App.UseCases.EnqueueMail(usecases.Mail{
+	err := a.UseCases.EnqueueMail(usecases.Mail{
 		From:    mail.From,
 		To:      mail.To,
 		Subject: mail.Subject,

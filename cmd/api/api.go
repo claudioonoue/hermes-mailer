@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,56 +12,56 @@ import (
 	"hermes-mailer/internal/usecases"
 )
 
-type app struct {
-	Logger   *logger
+type App struct {
+	Config   *Config
+	Logger   *Logger
 	Fiber    *fiber.App
 	UseCases *usecases.Core
 }
 
-var App *app
-
 func main() {
 	var err error
 
-	logger, err := newLogger()
+	config, err := newConfig()
 	if err != nil {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
 
-	logger.info("Configuring API...")
+	isProd := config.Env == "prod"
 
-	logger.info("Initializing UseCases...")
+	logger, err := newLogger(isProd)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 
 	useCasesCore, err := usecases.New(&usecases.Setup{
 		MessagePublisherConfig: &usecases.MessageBrokerConfig{
-			URL: "amqp://guest:guest@localhost:5672/",
+			URL: config.MessageBrokerURL,
 		},
 	})
 	if err != nil {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
 
-	App = &app{
+	app := &App{
+		Config: config,
 		Logger: logger,
 		Fiber: fiber.New(fiber.Config{
-			DisableStartupMessage: true,
+			DisableStartupMessage: isProd,
 		}),
 		UseCases: useCasesCore,
 	}
 
-	logger.info("Binding routes...")
-	for _, route := range App.GetRoutes() {
-		App.Fiber.Add(route.Method, route.Path, route.Handler)
+	for _, route := range app.GetRoutes() {
+		app.Fiber.Add(route.Method, route.Path, route.Handler)
 	}
 
-	go App.listenForShutdown()
+	go app.listenForShutdown()
 
-	logger.info("Serving API...")
-	App.Fiber.Listen(":3000")
+	app.Fiber.Listen(fmt.Sprintf(":%s", config.APIPort))
 }
 
-func (a *app) listenForShutdown() {
-	a.Logger.info("Listening for shutdown...")
+func (a *App) listenForShutdown() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
@@ -67,6 +69,7 @@ func (a *app) listenForShutdown() {
 	os.Exit(0)
 }
 
-func (a *app) shutdown() {
+func (a *App) shutdown() {
 	a.UseCases.Cleanup()
+	a.Logger.Sync()
 }

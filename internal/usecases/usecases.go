@@ -29,14 +29,14 @@ type MessageBrokerConfig struct {
 //
 // It returns a pointer to the new instantiated Core.
 func New(c *Setup) (*Core, error) {
-	var core *Core
+	var err error
+	core := &Core{}
 
 	if c.MessagePublisherConfig != nil {
-		publisher, err := messagebroker.NewPublisher(c.MessagePublisherConfig.URL)
+		core.MessagePublisher, err = messagebroker.NewPublisher(c.MessagePublisherConfig.URL)
 		if err != nil {
 			return nil, err
 		}
-		core.MessagePublisher = publisher
 	}
 
 	return core, nil
