@@ -15,8 +15,15 @@ type app struct {
 }
 
 func main() {
+	var err error
+
+	consumer, err := messagebroker.NewConsumer("amqp://guest:guest@localhost:5672/")
+	if err != nil {
+		panic(err)
+	}
+
 	App := &app{
-		MessageConsumer: messagebroker.NewConsumer("amqp://guest:guest@localhost:5672/"),
+		MessageConsumer: consumer,
 	}
 
 	go App.listenForShutdown()

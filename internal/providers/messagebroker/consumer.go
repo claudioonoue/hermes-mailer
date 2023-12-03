@@ -6,16 +6,29 @@ type Consumer struct {
 }
 
 // NewConsumer is a function that will return a new Consumer instance.
-func NewConsumer(connectionString string) *Consumer {
-	client := newRabbitMQ(connectionString)
-	client.dial()
-	client.openChannel()
+func NewConsumer(connectionString string) (*Consumer, error) {
+	var err error
 
-	setupMailerConsumer(client)
+	client := newRabbitMQ(connectionString)
+
+	err = client.dial()
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.openChannel()
+	if err != nil {
+		return nil, err
+	}
+
+	err = setupMailerConsumer(client)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Consumer{
 		client: client,
-	}
+	}, nil
 }
 
 // ConsumeFromMailerExchange is a method that will consume a message from the mailer exchange.
@@ -29,7 +42,6 @@ func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan MailerQueueM
 		NoWait:    false,
 		Args:      nil,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -57,14 +69,15 @@ func (mc *Consumer) ConsumeFromMailerExchange(queue string) (<-chan MailerQueueM
 }
 
 // CloseConn is a method that will close the connection to the message broker.
-func (mc *Consumer) CloseConn() error {
+func (mc *Consumer) CloseConn() {
 	mc.client.closeConn()
-	return nil
 }
 
 // setupMailerConsumer is a helper function that will setup the mailer consumer.
-func setupMailerConsumer(client *rabbitMQ) {
-	client.exchangeDeclare(rabbitMQExchange{
+func setupMailerConsumer(client *rabbitMQ) error {
+	var err error
+
+	err = client.exchangeDeclare(rabbitMQExchange{
 		Name:       MailerExchange,
 		Type:       "direct",
 		Durable:    true,
@@ -73,8 +86,11 @@ func setupMailerConsumer(client *rabbitMQ) {
 		NoWait:     false,
 		Args:       nil,
 	})
+	if err != nil {
+		return err
+	}
 
-	client.queueDeclare(rabbitMQQueue{
+	err = client.queueDeclare(rabbitMQQueue{
 		Name:       MailerQueue,
 		Durable:    true,
 		AutoDelete: false,
@@ -82,12 +98,19 @@ func setupMailerConsumer(client *rabbitMQ) {
 		NoWait:     false,
 		Args:       nil,
 	})
+	if err != nil {
+		return err
+	}
 
-	client.queueBind(rabbitMQQueueBind{
+	err = client.queueBind(rabbitMQQueueBind{
 		Queue:    MailerQueue,
 		Key:      MailerSendSimpleMail,
 		Exchange: MailerExchange,
 		NoWait:   false,
 	})
+	if err != nil {
+		return err
+	}
 
+	return nil
 }

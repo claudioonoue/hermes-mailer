@@ -66,23 +66,25 @@ func newRabbitMQ(URL string) *rabbitMQ {
 	}
 }
 
-func (mb *rabbitMQ) dial() {
+func (mb *rabbitMQ) dial() error {
 	var err error
 	mb.Conn, err = amqp.Dial(mb.URL)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
-func (mb *rabbitMQ) openChannel() {
+func (mb *rabbitMQ) openChannel() error {
 	var err error
 	mb.Ch, err = mb.Conn.Channel()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
-func (mb *rabbitMQ) exchangeDeclare(exchange rabbitMQExchange) {
+func (mb *rabbitMQ) exchangeDeclare(exchange rabbitMQExchange) error {
 	err := mb.Ch.ExchangeDeclare(
 		exchange.Name,
 		exchange.Type,
@@ -93,11 +95,12 @@ func (mb *rabbitMQ) exchangeDeclare(exchange rabbitMQExchange) {
 		exchange.Args,
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
-func (mb *rabbitMQ) queueDeclare(queue rabbitMQQueue) {
+func (mb *rabbitMQ) queueDeclare(queue rabbitMQQueue) error {
 	_, err := mb.Ch.QueueDeclare(
 		queue.Name,
 		queue.Durable,
@@ -107,11 +110,12 @@ func (mb *rabbitMQ) queueDeclare(queue rabbitMQQueue) {
 		queue.Args,
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
-func (mb *rabbitMQ) queueBind(queueBind rabbitMQQueueBind) {
+func (mb *rabbitMQ) queueBind(queueBind rabbitMQQueueBind) error {
 	err := mb.Ch.QueueBind(
 		queueBind.Queue,
 		queueBind.Key,
@@ -120,8 +124,9 @@ func (mb *rabbitMQ) queueBind(queueBind rabbitMQQueueBind) {
 		queueBind.Args,
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 func (mb *rabbitMQ) publishWithContext(publish rabbitMQPublish) error {

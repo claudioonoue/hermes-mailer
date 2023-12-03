@@ -25,16 +25,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	logger.info("Configuring API...")
+
 	logger.info("Initializing UseCases...")
+
 	useCasesCore, err := usecases.New(&usecases.Setup{
 		MessagePublisherConfig: &usecases.MessageBrokerConfig{
 			URL: "amqp://guest:guest@localhost:5672/",
 		},
 	})
 	if err != nil {
-		logger.error(err.Error())
-		return
+		panic(err)
 	}
 
 	App = &app{

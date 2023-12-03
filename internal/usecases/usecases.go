@@ -29,20 +29,20 @@ type MessageBrokerConfig struct {
 //
 // It returns a pointer to the new instantiated Core.
 func New(c *Setup) (*Core, error) {
-	return &Core{
-		MessagePublisher: initMessagePublisher(c.MessagePublisherConfig),
-	}, nil
+	var core *Core
+
+	if c.MessagePublisherConfig != nil {
+		publisher, err := messagebroker.NewPublisher(c.MessagePublisherConfig.URL)
+		if err != nil {
+			return nil, err
+		}
+		core.MessagePublisher = publisher
+	}
+
+	return core, nil
 }
 
 // Cleanup cleans up all the usecases dependencies.
 func (c *Core) Cleanup() {
 	c.MessagePublisher.CloseConn()
-}
-
-// initMessagePublisher initialize the queue message Publisher.
-func initMessagePublisher(mbc *MessageBrokerConfig) *messagebroker.Publisher {
-	if mbc == nil {
-		return nil
-	}
-	return messagebroker.NewPublisher(mbc.URL)
 }

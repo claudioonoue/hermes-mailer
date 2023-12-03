@@ -13,12 +13,22 @@ type Publisher struct {
 }
 
 // NewPublisher is a function that will return a new Publisher instance.
-func NewPublisher(connectionString string) *Publisher {
-	client := newRabbitMQ(connectionString)
-	client.dial()
-	client.openChannel()
+func NewPublisher(connectionString string) (*Publisher, error) {
+	var err error
 
-	client.exchangeDeclare(rabbitMQExchange{
+	client := newRabbitMQ(connectionString)
+
+	err = client.dial()
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.openChannel()
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.exchangeDeclare(rabbitMQExchange{
 		Name:       MailerExchange,
 		Type:       "direct",
 		Durable:    true,
@@ -27,10 +37,13 @@ func NewPublisher(connectionString string) *Publisher {
 		NoWait:     false,
 		Args:       nil,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &Publisher{
 		client: client,
-	}
+	}, nil
 }
 
 // PublishToMailerExchange is a method that will publish a message to the mailer exchange.
@@ -64,7 +77,6 @@ func (mp *Publisher) PublishToMailerExchange(key string, message MailerQueueMess
 }
 
 // CloseConn is a method that will close the connection to the message broker.
-func (mp *Publisher) CloseConn() error {
+func (mp *Publisher) CloseConn() {
 	mp.client.closeConn()
-	return nil
 }
