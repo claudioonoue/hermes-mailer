@@ -41,16 +41,16 @@ func newLogger() (*logger, error) {
 		return lvl < zapcore.ErrorLevel
 	})
 
-	if _, err := os.Stat("./temp"); os.IsNotExist(err) {
-		os.Mkdir("./temp", 0755)
+	if _, err := os.Stat("./temp/api"); os.IsNotExist(err) {
+		os.MkdirAll("./temp/api", 0755)
 	}
 
-	logFile, err := os.OpenFile("./temp/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile("./temp/api/info.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 
-	errorFile, err := os.OpenFile("./temp/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	errorFile, err := os.OpenFile("./temp/api/error.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
