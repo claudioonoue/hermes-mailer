@@ -1,2 +1,10 @@
+# Ignore folders
 _db-data/*
-temp/*
+tmp/*
+
+# Ignore .env file
+.env
+
+# Ignore build files
+./api
+./messageconsumer

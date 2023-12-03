@@ -1,30 +1,16 @@
 version: '3'
 
 services:
+  postgres:
+    image: 'postgres:14.2'
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./_db-data/postgres/:/var/lib/postgresql/data/
 
-  #  start Postgres, and ensure that data is stored to a mounted volume
-  # postgres:
-  #   image: 'postgres:14.2'
-  #   ports:
-  #     - "5432:5432"
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: password
-  #     POSTGRES_DB: concurrency
-  #   volumes:
-  #     - ./_db-data/postgres/:/var/lib/postgresql/data/
-
-  #  start Redis, and ensure that data is stored to a mounted volume
-  # redis:
-  #   image: 'redis:alpine'
-  #   ports:
-  #     - "6379:6379"
-  #   restart: always
-  #   volumes:
-  #     - ./_db-data/redis/:/data
-
-  #  start mailhog
   mailhog:
     image: 'mailhog/mailhog:latest'
     ports:
@@ -34,8 +20,8 @@ services:
   rabbitmq:
     image: rabbitmq:management
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     ports:
       - "5672:5672"
       - "15672:15672"
