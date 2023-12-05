@@ -65,7 +65,7 @@ consumer-run: consumer-stop consumer-build
 
 # --------------------------------------------------------------------------------------
 # ------------------------------------- Docker -----------------------------------------
-.PHONY: docker-build
+.PHONY: docker-start
 docker-start:
 	@echo "Starting docker..."
 	@env POSTGRES_USER=${POSTGRES_USER} POSTGRES_PASSWORD=${POSTGRES_PASSWORD} RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER} RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS} docker compose up -d
