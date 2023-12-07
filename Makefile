@@ -1,8 +1,5 @@
 # --------------------------------------------------------------------------------------
 # ---------------------------------- VARIABLES -----------------------------------------
-POSTGRES_USER = postgres
-POSTGRES_PASSWORD = postgres
-
 RABBITMQ_DEFAULT_USER = rabbitmq
 RABBITMQ_DEFAULT_PASS = rabbitmq
 
@@ -68,7 +65,7 @@ consumer-run: consumer-stop consumer-build
 .PHONY: docker-start
 docker-start:
 	@echo "Starting docker..."
-	@env POSTGRES_USER=${POSTGRES_USER} POSTGRES_PASSWORD=${POSTGRES_PASSWORD} RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER} RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS} docker compose up -d
+	@env RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER} RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS} docker compose up -d
 	@echo "Docker started!"
 
 .PHONY: docker-stop

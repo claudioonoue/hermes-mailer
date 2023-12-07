@@ -17,7 +17,7 @@ type App struct {
 	Config           *Config
 	Logger           *Logger
 	Fiber            *fiber.App
-	MessagePublisher *messagebroker.Publisher
+	MessagePublisher messagebroker.Publisher
 }
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	publisher, err := messagebroker.NewPublisher(config.MessageBrokerURL)
+	publisher, err := messagebroker.NewPublisher(messagebroker.RabbitMQ, config.MessageBrokerURL)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
@@ -67,4 +67,5 @@ func (a *App) ListenForShutdown() {
 // Shutdown calls the cleanup methods for the application.
 func (a *App) Shutdown() {
 	a.Logger.Sync()
+	a.MessagePublisher.Close()
 }

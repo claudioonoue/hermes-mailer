@@ -13,7 +13,7 @@ import (
 
 type App struct {
 	Config          *Config
-	MessageConsumer *messagebroker.Consumer
+	MessageConsumer messagebroker.Consumer
 }
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 
 	config := newConfig()
 
-	consumer, err := messagebroker.NewConsumer(config.MessageBrokerURL)
+	consumer, err := messagebroker.NewConsumer(messagebroker.RabbitMQ, config.MessageBrokerURL)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
@@ -33,7 +33,7 @@ func main() {
 
 	go app.ListenForShutdown()
 
-	ch, err := app.MessageConsumer.ConsumeFromMailerExchange(messagebroker.MailerQueue)
+	ch, err := app.MessageConsumer.ConsumeFromMailerExchange()
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
@@ -49,7 +49,7 @@ func (a *App) ListenForShutdown() {
 	<-ch
 
 	fmt.Println("Shutting down consumer...")
-	a.MessageConsumer.CloseConn()
+	a.MessageConsumer.Close()
 	os.Exit(0)
 }
 

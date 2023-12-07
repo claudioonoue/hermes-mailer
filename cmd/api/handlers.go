@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -42,16 +43,19 @@ func (a *App) SendMail(c *fiber.Ctx) error {
 		})
 	}
 
-	err = a.MessagePublisher.PublishToMailerExchange(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = a.MessagePublisher.PublishToMailerExchangeWithContext(
+		ctx,
 		exchangeKey,
-		messagebroker.MailerQueueMessageBody{
+		&messagebroker.MailerQueueMessageBody{
 			From:    mail.From,
 			To:      mail.To,
 			Subject: mail.Subject,
 			Body:    mail.Body,
 			Type:    mail.Type,
 		},
-		10*time.Second,
 	)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(JSONResponse{
