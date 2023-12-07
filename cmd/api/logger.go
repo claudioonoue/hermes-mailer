@@ -70,6 +70,7 @@ func newProdLogger() (*Logger, error) {
 	}, nil
 }
 
+// newDevLogger creates a new logger for development.
 func newDevLogger() (*Logger, error) {
 	zapLogger, err := zap.NewDevelopment()
 	if err != nil {

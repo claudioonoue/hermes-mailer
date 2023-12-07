@@ -12,6 +12,7 @@ import (
 	"hermes-mailer/internal/usecases"
 )
 
+// App is the main application struct.
 type App struct {
 	Config   *Config
 	Logger   *Logger
@@ -58,6 +59,7 @@ func main() {
 	app.Fiber.Listen(fmt.Sprintf(":%s", config.APIPort))
 }
 
+// ListenForShutdown listens for a shutdown signal and calls the Shutdown method.
 func (a *App) ListenForShutdown() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -66,6 +68,7 @@ func (a *App) ListenForShutdown() {
 	os.Exit(0)
 }
 
+// Shutdown calls the cleanup methods for the application.
 func (a *App) Shutdown() {
 	a.UseCases.Cleanup()
 	a.Logger.Sync()
