@@ -21,7 +21,11 @@ type MailerQueueMessage struct {
 
 // MailerQueueMessageBody is a struct that represents the body of a message that will be published to the mailer exchange.
 type MailerQueueMessageBody struct {
-	ExternalID string `json:"externalID"`
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	Body    string `json:"body"`
+	Type    string `json:"type"`
 }
 
 // toJSON is a method that will convert the MailerQueueMessageBody to JSON bytes.

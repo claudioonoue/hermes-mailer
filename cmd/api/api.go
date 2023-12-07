@@ -9,15 +9,15 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"hermes-mailer/internal/usecases"
+	"hermes-mailer/internal/providers/messagebroker"
 )
 
 // App is the main application struct.
 type App struct {
-	Config   *Config
-	Logger   *Logger
-	Fiber    *fiber.App
-	UseCases *usecases.Core
+	Config           *Config
+	Logger           *Logger
+	Fiber            *fiber.App
+	MessagePublisher *messagebroker.Publisher
 }
 
 func main() {
@@ -32,11 +32,7 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	useCasesCore, err := usecases.New(&usecases.Setup{
-		MessagePublisherConfig: &usecases.MessageBrokerConfig{
-			URL: config.MessageBrokerURL,
-		},
-	})
+	publisher, err := messagebroker.NewPublisher(config.MessageBrokerURL)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
@@ -47,7 +43,7 @@ func main() {
 		Fiber: fiber.New(fiber.Config{
 			DisableStartupMessage: isProd,
 		}),
-		UseCases: useCasesCore,
+		MessagePublisher: publisher,
 	}
 
 	for _, route := range app.GetRoutes() {
@@ -70,6 +66,5 @@ func (a *App) ListenForShutdown() {
 
 // Shutdown calls the cleanup methods for the application.
 func (a *App) Shutdown() {
-	a.UseCases.Cleanup()
 	a.Logger.Sync()
 }

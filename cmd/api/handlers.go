@@ -2,10 +2,11 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 
-	"hermes-mailer/internal/usecases"
+	"hermes-mailer/internal/providers/messagebroker"
 )
 
 func (a *App) CheckAPI(c *fiber.Ctx) error {
@@ -15,7 +16,7 @@ func (a *App) CheckAPI(c *fiber.Ctx) error {
 	})
 }
 
-type mail struct {
+type Mail struct {
 	From    string `json:"from"`
 	To      string `json:"to"`
 	Subject string `json:"subject"`
@@ -24,7 +25,7 @@ type mail struct {
 }
 
 func (a *App) SendMail(c *fiber.Ctx) error {
-	var mail mail
+	var mail Mail
 
 	if err := c.BodyParser(&mail); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(JSONResponse{
@@ -33,14 +34,25 @@ func (a *App) SendMail(c *fiber.Ctx) error {
 		})
 	}
 
-	err := a.UseCases.EnqueueMail(usecases.Mail{
-		From:    mail.From,
-		To:      mail.To,
-		Subject: mail.Subject,
-		Body:    mail.Body,
-		Type:    mail.Type,
-	})
+	exchangeKey, err := getExchangeKeyBasedOnMailType(mail.Type)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(JSONResponse{
+			Data:    nil,
+			Message: err.Error(),
+		})
+	}
 
+	err = a.MessagePublisher.PublishToMailerExchange(
+		exchangeKey,
+		messagebroker.MailerQueueMessageBody{
+			From:    mail.From,
+			To:      mail.To,
+			Subject: mail.Subject,
+			Body:    mail.Body,
+			Type:    mail.Type,
+		},
+		10*time.Second,
+	)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(JSONResponse{
 			Data:    nil,
