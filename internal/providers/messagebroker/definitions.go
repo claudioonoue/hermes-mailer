@@ -4,14 +4,8 @@ const (
 	// RabbitMQ is the name of the RabbitMQ message broker provider.
 	RabbitMQ = "rabbitmq"
 
-	// MailerExchange is the name of the mailer exchange.
-	MailerExchange = "mailer_exchange"
-
 	// MailerQueue is the name of the mailer queue.
 	MailerQueue = "mailer_queue"
-
-	// MailerSendSimpleMail is the routing key for the mailer send simple mail message.
-	MailerSendSimpleMail = "mailer_send_simple_mail"
 )
 
 // MailerQueueMessage is a struct that represents a message that will be published to the mailer exchange.

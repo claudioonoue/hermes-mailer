@@ -6,7 +6,7 @@ import (
 
 // Consumer is an interface that will be implemented by the message broker consumer.
 type Consumer interface {
-	ConsumeFromMailerExchange() (<-chan MailerQueueMessage, error)
+	ConsumeFromMailerQueue() (<-chan MailerQueueMessage, error)
 	Close() error
 }
 

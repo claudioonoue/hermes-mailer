@@ -26,6 +26,7 @@ type Mail struct {
 }
 
 func (a *App) SendMail(c *fiber.Ctx) error {
+	var err error
 	var mail Mail
 
 	if err := c.BodyParser(&mail); err != nil {
@@ -35,20 +36,11 @@ func (a *App) SendMail(c *fiber.Ctx) error {
 		})
 	}
 
-	exchangeKey, err := getExchangeKeyBasedOnMailType(mail.Type)
-	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(JSONResponse{
-			Data:    nil,
-			Message: err.Error(),
-		})
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = a.MessagePublisher.PublishToMailerExchangeWithContext(
+	err = a.MessagePublisher.PublishToMailerQueueWithContext(
 		ctx,
-		exchangeKey,
 		&messagebroker.MailerQueueMessageBody{
 			From:    mail.From,
 			To:      mail.To,

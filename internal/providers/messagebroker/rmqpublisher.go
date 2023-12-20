@@ -11,8 +11,8 @@ type RabbitMQPublisher struct {
 	client *rabbitMQ
 }
 
-// PublishToMailerExchangeWithContext is a method that will publish a message to Mailer Exchange.
-func (mp *RabbitMQPublisher) PublishToMailerExchangeWithContext(ctx context.Context, key string, message *MailerQueueMessageBody) error {
+// PublishToMailerQueueWithContext is a method that will publish a message to Mailer Queue.
+func (mp *RabbitMQPublisher) PublishToMailerQueueWithContext(ctx context.Context, message *MailerQueueMessageBody) error {
 	var err error
 
 	jsonMessage, err := toJSONBytes(&message)
@@ -22,8 +22,8 @@ func (mp *RabbitMQPublisher) PublishToMailerExchangeWithContext(ctx context.Cont
 
 	err = mp.client.publishWithContext(rabbitMQPublish{
 		Ctx:       ctx,
-		Exchange:  MailerExchange,
-		Key:       key,
+		Exchange:  MailerQueue,
+		Key:       "",
 		Mandatory: false,
 		Immediate: false,
 		Msg: amqp091.Publishing{
@@ -61,7 +61,7 @@ func NewRabbitMQPublisher(connectionString string) (*RabbitMQPublisher, error) {
 	}
 
 	err = client.exchangeDeclare(rabbitMQExchange{
-		Name:       MailerExchange,
+		Name:       MailerQueue,
 		Type:       "direct",
 		Durable:    true,
 		AutoDelete: false,

@@ -33,7 +33,7 @@ func main() {
 
 	go app.ListenForShutdown()
 
-	ch, err := app.MessageConsumer.ConsumeFromMailerExchange()
+	ch, err := app.MessageConsumer.ConsumeFromMailerQueue()
 	if err != nil {
 		log.Fatalf(err.Error())
 	}

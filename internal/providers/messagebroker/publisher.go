@@ -7,7 +7,7 @@ import (
 
 // Publisher is an interface that will be implemented by the message broker publisher.
 type Publisher interface {
-	PublishToMailerExchangeWithContext(ctx context.Context, key string, message *MailerQueueMessageBody) error
+	PublishToMailerQueueWithContext(ctx context.Context, message *MailerQueueMessageBody) error
 	Close() error
 }
 

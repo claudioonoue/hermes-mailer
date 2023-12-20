@@ -5,8 +5,8 @@ type RabbitMQConsumer struct {
 	client *rabbitMQ
 }
 
-// ConsumeFromMailerExchange is a method that will consume a message from the Mailer Exchange.
-func (mc *RabbitMQConsumer) ConsumeFromMailerExchange() (<-chan MailerQueueMessage, error) {
+// ConsumeFromMailerQueue is a method that will consume a message from the Mailer Exchange.
+func (mc *RabbitMQConsumer) ConsumeFromMailerQueue() (<-chan MailerQueueMessage, error) {
 	msgs, err := mc.client.consume(rabbitMQConsume{
 		Queue:     MailerQueue,
 		Consumer:  "",
@@ -65,7 +65,7 @@ func NewRabbitMQConsumer(connectionString string) (*RabbitMQConsumer, error) {
 	}
 
 	err = client.exchangeDeclare(rabbitMQExchange{
-		Name:       MailerExchange,
+		Name:       MailerQueue,
 		Type:       "direct",
 		Durable:    true,
 		AutoDelete: false,
@@ -91,8 +91,8 @@ func NewRabbitMQConsumer(connectionString string) (*RabbitMQConsumer, error) {
 
 	err = client.queueBind(rabbitMQQueueBind{
 		Queue:    MailerQueue,
-		Key:      MailerSendSimpleMail,
-		Exchange: MailerExchange,
+		Key:      "",
+		Exchange: MailerQueue,
 		NoWait:   false,
 	})
 	if err != nil {
