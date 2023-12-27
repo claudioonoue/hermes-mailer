@@ -1,7 +1,7 @@
 # Ignore folders
 _db-data/*
-tmp/*
-bin/*
+tmp
+bin
 
 # Ignore .env file
 .env
