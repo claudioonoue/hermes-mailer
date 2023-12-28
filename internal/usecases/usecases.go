@@ -10,11 +10,6 @@ type Core struct {
 type Setup struct {
 }
 
-// MessageBrokerConfig is the configuration struct for the MessageBroker.
-type MessageBrokerConfig struct {
-	URL string
-}
-
 // New creates a brand new usecases Core with all dependencies initialized.
 // It receives a pointer to a Setup struct with all the information necessary to initialize the usecases dependencies.
 //
